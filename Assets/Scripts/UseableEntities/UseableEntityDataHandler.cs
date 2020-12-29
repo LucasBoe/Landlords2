@@ -9,7 +9,7 @@ public class UseableEntityDataHandler : Singleton<UseableEntityDataHandler>
 
     public UseableEntityData GetData(string type)
     {
-        if (datas == null && datas.Length == 0)
+        if (datas == null || datas.Length == 0)
             datas = FetchDatasFromResources();
 
         foreach (var data in datas)

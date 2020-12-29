@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9776a3b87fc79492db849e14860ecc63, type: 3}
-  m_Name: Serf
+  m_Name: Crops
   m_EditorClassIdentifier: 
-  type: Serf
-  DisplayName: Serf
-  isStackable: 0
-  isConsumeable: 0
-  color: {r: 0, g: 0.9056604, b: 0.31411484, a: 1}
+  type: Crops
+  DisplayName: Crops
+  isStackable: 1
+  isConsumeable: 1
+  color: {r: 1, g: 0.7045615, b: 0, a: 1}

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d577a893cce14cde9be57eaf31aac81, type: 3}
+  m_Name: FastFarming
+  m_EditorClassIdentifier: 
+  input:
+  - entity: {fileID: 11400000, guid: f0d4003e03ac94006a4f528b9a0c2fd0, type: 2}
+    amountMin: 1
+    amountMax: 3
+    allwaysOutput: 1
+  output:
+  - entity: {fileID: 11400000, guid: 0f1f7967e196b4718847d06a81c12cd5, type: 2}
+    baseAmount: 0
+    amountPerInput: 2
+    probability: 1
