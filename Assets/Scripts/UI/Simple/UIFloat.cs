@@ -26,8 +26,9 @@ public class UIFloat : MonoBehaviour, IUIConnectable
             text = gameObject.AddComponent<TMP_Text>();
     }
 
-    public void UpdateUI()
+    public void UpdateUI<T>(T obj)
     {
+        connected = obj;
         text.text = GetConnected<IUIFloat>().GetUIFloat().ToString();
     }
 }

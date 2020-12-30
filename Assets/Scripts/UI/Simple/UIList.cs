@@ -167,16 +167,12 @@ public class UIListElement<T>
 
         foreach (IUIConnectable connectable in connectables)
         {
-            //if (connectable as UIImage != null)
-            {
-                connectable.Init(source);
-                connectable.UpdateUI();
-
-                if (connectable as IUIClickable != null)
-                    (connectable as IUIClickable).SetClickMethod(ClickedOn);
-
-                this.connectables.Add(connectable);
-            }
+            connectable.UpdateUI(source);
+            
+            if (connectable as IUIClickable != null)
+                (connectable as IUIClickable).SetClickMethod(ClickedOn);
+            
+            this.connectables.Add(connectable);
         }
 
         Source = source;
@@ -209,7 +205,7 @@ public class UIListElement<T>
     {
         foreach (IUIConnectable connectable in connectables)
         {
-            connectable.UpdateUI();
+            connectable.UpdateUI(Source);
         }
     }
 }

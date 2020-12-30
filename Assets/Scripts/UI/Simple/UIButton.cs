@@ -40,8 +40,9 @@ public class UIButton : Button, IUIClickable
         OnClick?.Invoke();
     }
 
-    public void UpdateUI()
+    public void UpdateUI<T>(T obj)
     {
+        connected = obj;
         //
     }
 }

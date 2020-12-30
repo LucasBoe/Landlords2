@@ -11,6 +11,11 @@ public class UIText : MonoBehaviour, IUIConnectable
     [SerializeField] bool parentIsRoot;
     [SerializeField] string emptyText;
 
+    private void OnEnable()
+    {
+        text = GetComponent<TMP_Text>();
+    }
+
     public IUIString GetConnected<IUIString>()
     {
         return (IUIString)connected;
@@ -35,14 +40,12 @@ public class UIText : MonoBehaviour, IUIConnectable
     public void Init<T>(T obj)
     {
         connected = obj;
-        text = GetComponent<TMP_Text>();
-        if (text == null)
-            text = gameObject.AddComponent<TMP_Text>();
     }
 
-        public void UpdateUI()
+    public void UpdateUI<T>(T obj)
     {
-        Debug.Log("Update UI"); //IAAAM NOT CALLED!
+        connected = obj;
+
         if (GetConnected<IUIString>() != null)
             text.text = GetConnected<IUIString>().GetUIString();
         else

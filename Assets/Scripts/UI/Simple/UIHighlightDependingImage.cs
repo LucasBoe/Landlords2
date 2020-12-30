@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class UIHighlightDependingImage : Image, IUIHighlightable
 {
-    IUISprite connected;
+    object connected;
 
     public IUISprite GetConnected<IUISprite>()
     {
@@ -31,8 +31,8 @@ public class UIHighlightDependingImage : Image, IUIHighlightable
             color = new Color(color.r, color.g, color.b, 1);
     }
 
-    public void UpdateUI()
+    public void UpdateUI<T>(T obj)
     {
-        //
+        connected = obj;
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 public interface IUIConnectable
 {
     void Init<T>(T obj);
-    void UpdateUI();
+    void UpdateUI<T>(T obj);
     void HideUI();
     T GetConnected<T>();
 }
@@ -28,8 +28,9 @@ public class UIBehaviour : MonoBehaviour, IUIConnectable
         connected = obj;
     }
 
-    public virtual void UpdateUI() {
-        //
+    public void UpdateUI<T>(T obj)
+    {
+        connected = obj;
     }
 
     public virtual void HideUI() {

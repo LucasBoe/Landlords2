@@ -27,8 +27,9 @@ public class UIImage : Image, IUIConnectable
         connected = obj;
     }
 
-    public void UpdateUI()
+    public void UpdateUI<T>(T obj)
     {
+        connected = obj;
         bool isNull = connected as IUISprite == null;
 
         color = isNull ? emptyColor : (connected as IUISprite).GetUIImageColor();
