@@ -18,7 +18,7 @@ public class Game : MonoBehaviour
         }
     }
 
-    public static CameraHandler CameraHandler {
+    public static CameraHandler Camera {
         get {
             return CameraHandler.GetInstance();
         }
