@@ -4,14 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 
 [System.Serializable]
-public class ListSubscribable<T>: IList
+public class SubscribableList<T>: IList
 {
-    public Action<int> ChangeRemoveAt;
-    public Action<int> ChangeAddAt;
-    public Action<int> ChangeAt;
-    public Action<T> ChangeRemove;
-    public Action<T> Change;
-    public Action<T> ChangeAdd;
+    public event Action<int> ChangeRemoveAt;
+    public event Action<int> ChangeAddAt;
+    public event Action<int> ChangeAt;
+    public event Action<T> ChangeRemove;
+    public event Action<T> Change;
+    public event Action<T> ChangeAdd;
 
     public int MaxCount = -1;
 
@@ -67,7 +67,8 @@ public class ListSubscribable<T>: IList
         int index = list.IndexOf((T)value);
         list.Remove((T)value);
         ChangeRemove?.Invoke((T)value);
-        ChangeRemoveAt?.Invoke(index);
+        if (index >= 0)
+            ChangeRemoveAt?.Invoke(index);
     }
 
     public void RemoveAt(int index)
@@ -75,7 +76,8 @@ public class ListSubscribable<T>: IList
         T obj = list[index];
         list.RemoveAt(index);
         ChangeRemove?.Invoke(obj);
-        ChangeRemoveAt?.Invoke(index);
+        if (index >= 0)
+            ChangeRemoveAt?.Invoke(index);
     }
 
     public void Changed(int index) {
@@ -96,6 +98,14 @@ public class ListSubscribable<T>: IList
     public IEnumerator GetEnumerator()
     {
         return list.GetEnumerator();
+    }
+
+    public virtual bool WouldReceive(T element)
+    {
+        if (MaxCount < 0 || Count < MaxCount)
+            return true;
+
+        return false;
     }
 
     public void ClickedOn(int index)

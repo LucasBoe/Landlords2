@@ -23,6 +23,13 @@ public class Game : MonoBehaviour
             return CameraHandler.GetInstance();
         }
     }
+    public static UIHandler UIHandler
+    {
+        get
+        {
+            return UIHandler.GetInstance();
+        }
+    }
 
     public static UseableEntityDataHandler UseableEntityDataHandler {
         get {

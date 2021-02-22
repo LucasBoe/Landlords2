@@ -1,16 +1,20 @@
-﻿using System;
+﻿using NaughtyAttributes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
 public class Process : IUIString
 {
-    public ProcessData Data { get; set; }
+    [Expandable]
+    [SerializeField]
+    public ProcessData Data;
     public ProcessStatus status = ProcessStatus.Running;
     public bool Loop;
 
-    public ListSubscribable<UseableEntity> inputEntities = new ListSubscribable<UseableEntity>();
-    public ListSubscribable<UseableEntity> nonHumanEntities = new ListSubscribable<UseableEntity>();
+    public SubscribableList<UseableEntity> inputEntities = new SubscribableList<UseableEntity>();
+    public SubscribableList<UseableEntity> nonHumanEntities = new SubscribableList<UseableEntity>();
 
     System.Action OnStartProcessing;
     System.Action OnFinishProcessing;

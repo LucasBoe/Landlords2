@@ -1,12 +1,14 @@
-﻿using System;
+﻿using NaughtyAttributes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Processor : MonoBehaviour
 {
+    [Expandable]
     [SerializeField] List<ProcessData> possibleProcesses = new List<ProcessData>();
-    [SerializeField] public ListSubscribable<Process> ActiveProcesses = new ListSubscribable<Process>(); 
+    [SerializeField] public SubscribableList<Process> ActiveProcesses = new SubscribableList<Process>(); 
 
     public ProcessData[] GetProcessDatas()
     {

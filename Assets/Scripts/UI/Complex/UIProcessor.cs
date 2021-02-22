@@ -32,7 +32,7 @@ public class UIProcessor : UIBehaviour
         ChangeSelectedProcess(0); //this connects the ui with the first availiable process
 
         //TEMP
-        p.GetProcess(0).nonHumanEntities.Add(new UseableEntity(useableEntityDataTEMP));
+        p.GetProcess(1).nonHumanEntities.Add(new UseableEntity(useableEntityDataTEMP));
     }
 
     private void ClickedOn(int index) {

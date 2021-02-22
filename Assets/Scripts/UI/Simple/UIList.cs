@@ -1,12 +1,21 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UIList<T> : MonoBehaviour
+public interface IDropReceiver<T>
+{
+    public bool IsSameType<T1>(T1 type);
+    public bool IsDifferentList(SubscribableList<T> list);
+    public bool WouldRecieve(T source);
+    public void Receive(T source);
+}
+
+public class UIList<T> : MonoBehaviour, IDropReceiver<T>
 {
     public bool HandleAsArray;
     public GameObject elementPrefab;
-    ListSubscribable<T> connectedList = new ListSubscribable<T>();
+    [SerializeField] SubscribableList<T> connectedList = new SubscribableList<T>();
     protected List<UIListElement<T>> elementRepresentations = new List<UIListElement<T>>();
 
     System.Action<int> OnClick;
@@ -32,7 +41,7 @@ public class UIList<T> : MonoBehaviour
     /// Initialize the visualization by saving the list and subscribing to change events.
     /// </summary>
     /// <param name="obj">the object to connect with.</param>
-    public virtual void Init(ListSubscribable<T> obj)
+    public virtual void Init(SubscribableList<T> obj)
     {
         //hide visualized elements that were there before
         HideAll();
@@ -56,7 +65,7 @@ public class UIList<T> : MonoBehaviour
             for (int i = 0; i < connectedList.MaxCount; i++)
             {
                 T source = (T)((connectedList != null && connectedList.Count > i) ? connectedList[i] : null);
-                elementRepresentations.Add(new UIListElement<T>(source, ClickedOn, InstantiateAndReturnConnectables()));
+                elementRepresentations.Add(InstantiateAndConnectNewElement(source, ClickedOn));
             }
         }
         else
@@ -92,14 +101,21 @@ public class UIList<T> : MonoBehaviour
 
     protected virtual void OnChangeAdd(T element)
     {
+        Debug.LogWarning("ChangeAdd " + element);
+
         if (!HandleAsArray)
-            elementRepresentations.Add(new UIListElement<T>(element, ClickedOn, InstantiateAndReturnConnectables()));
+            elementRepresentations.Add(InstantiateAndConnectNewElement(element, ClickedOn));
     }
 
     protected virtual void OnChangeAddAt(int index)
     {
         if (HandleAsArray)
-            elementRepresentations[index] = new UIListElement<T>((T)connectedList[index], ClickedOn, InstantiateAndReturnConnectables());
+        {
+            elementRepresentations[index].HideUI();
+            UIListElement<T> element = InstantiateAndConnectNewElement((T)connectedList[index], ClickedOn);
+            elementRepresentations[index] = element;
+            element.transform.SetSiblingIndex(index);
+        }
     }
 
     protected virtual void OnChangeRemove(T element)
@@ -118,14 +134,20 @@ public class UIList<T> : MonoBehaviour
 
     protected virtual void OnChangeRemoveAt(int index)
     {
+        Debug.LogWarning(index);
+
         if (HandleAsArray)
         {
-            elementRepresentations[index].HideUI();
-            elementRepresentations.RemoveAt(index);
+            if (elementRepresentations[index] != null)
+                elementRepresentations[index].HideUI();
+            UIListElement<T> element = InstantiateAndConnectNewElement(default(T), ClickedOn);
+            elementRepresentations[index] = element;
+            element.transform.SetSiblingIndex(index);
         }
     }
 
-    private void ClickedOn(UIListElement<T> representation) {
+    private void ClickedOn(UIListElement<T> representation)
+    {
         for (int i = 0; i < elementRepresentations.Count; i++)
         {
             if (elementRepresentations[i] != null && elementRepresentations[i] == representation)
@@ -137,13 +159,21 @@ public class UIList<T> : MonoBehaviour
         }
     }
 
-    private IUIConnectable[] InstantiateAndReturnConnectables()
+    private UIListElement<T> InstantiateAndConnectNewElement(T connectedElement, System.Action<UIListElement<T>> clickedOn)
     {
         GameObject instance = Instantiate(elementPrefab, transform);
-        return instance.GetComponentsInChildren<IUIConnectable>();
+        UIListElement<T> element = instance.GetComponent<UIListElement<T>>();
+        if (element == null)
+        {
+            Debug.LogError("No element found, please add fitting script to prefab");
+        }
+
+        element.InitToList(connectedList, connectedElement, clickedOn, instance.GetComponentsInChildren<IUIConnectable>());
+        return element;
     }
 
-    private void HideAll() {
+    private void HideAll()
+    {
 
         if (elementRepresentations == null)
             return;
@@ -151,61 +181,24 @@ public class UIList<T> : MonoBehaviour
         foreach (UIListElement<T> item in elementRepresentations)
             item.HideUI();
     }
-}
 
-public class UIListElement<T>
-{
-    List<IUIConnectable> connectables = new List<IUIConnectable>();
-    public T Source;
-    System.Action<UIListElement<T>> OnClick;
-
-    public UIListElement (T source, System.Action<UIListElement<T>> clickAction, params IUIConnectable[] connectables)
+    public virtual bool IsSameType<T1>(T1 type)
     {
-        Debug.Log("create new element with " + connectables.Length + " connectables.");
-
-        OnClick = clickAction;
-
-        foreach (IUIConnectable connectable in connectables)
-        {
-            connectable.UpdateUI(source);
-            
-            if (connectable as IUIClickable != null)
-                (connectable as IUIClickable).SetClickMethod(ClickedOn);
-            
-            this.connectables.Add(connectable);
-        }
-
-        Source = source;
+        return (typeof(T) == typeof(T1));
     }
 
-    public void HideUI()
+    public virtual bool WouldRecieve(T source)
     {
-        foreach (IUIConnectable connectable in connectables)
-        {
-            connectable.HideUI();
-        }
+        return connectedList.WouldReceive(source);
     }
 
-    private void ClickedOn() {
-        OnClick?.Invoke(this);
+    public void Receive(T source)
+    {
+        connectedList.Add(source as object);
     }
 
-    public void SetSelected(bool isSelected)
+    public bool IsDifferentList(SubscribableList<T> list)
     {
-        Debug.Log("is selected: " + isSelected);
-
-        foreach (IUIConnectable connectable in connectables)
-        {
-            if (connectable as IUIHighlightable != null)
-                (connectable as IUIHighlightable).SetSelected(isSelected);
-        }
-    }
-
-    public void UpdateUI()
-    {
-        foreach (IUIConnectable connectable in connectables)
-        {
-            connectable.UpdateUI(Source);
-        }
+        return connectedList != list;
     }
 }
