@@ -4,34 +4,23 @@ using NaughtyAttributes;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIProcessor : UIBehaviour
+public class UIProcessor : UIProcessorBase
 {
-    int foregroundProcessIndex = 0;
-
-    [SerializeField] Processor processor;
-
     [SerializeField] UIProcessList uIHeaderProcesses;
     [SerializeField] UIUseableEntityList inputListUI;
     [SerializeField] UIUseableEntityList nonHumanListUI;
-    [SerializeField] UIProgressBar progressBarUI;
+    
 
     [SerializeField] Button startButton;
     [SerializeField] Toggle loopToggle;
 
     Process foregroundProcess;
 
-    private void Start()
-    {
-        Init(processor); //TEMP
-    }
-
     public override void Init<T>(T obj)
     {
         base.Init(obj);
 
         Processor p = GetConnected<Processor>();
-
-        p.ActivateAll(); //this should be done in the processor itself at some point
         uIHeaderProcesses.Init(p.ActiveProcesses); //all ui elements need to get connected through init
         uIHeaderProcesses.DefineOnClick(ClickOnHeaderItem);
         ChangeSelectedProcess(0); //this connects the ui with the first availiable process
@@ -84,5 +73,21 @@ public class UIProcessor : UIBehaviour
     private void TryStartCurrentProcess()
     {
         foregroundProcess.TryStart(GetConnected<Processor>());
+    }
+
+    private void OnDestroy()
+    {
+        Debug.LogError("Hidden!");
+
+        if (foregroundProcess != null)
+        {
+            foregroundProcess.inputEntities.ChangeAny -= UpdateUI;
+            foregroundProcess.nonHumanEntities.ChangeAny -= UpdateUI;
+            foregroundProcess.OnFinishProgressEvent -= UpdateUI;
+        }
+
+        uIHeaderProcesses.HideUI();
+        inputListUI.HideUI();
+        nonHumanListUI.HideUI();
     }
 }

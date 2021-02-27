@@ -40,11 +40,6 @@ public class UIList<T> : MonoBehaviour, IDropReceiver<T>
         //hide visualized elements that were there before
         HideAll();
 
-        //unsubscribe from any previous list
-        connectedList.Change -= OnChange;
-        connectedList.ChangeAdd -= OnChangeAdd;
-        connectedList.ChangeRemove -= OnChangeRemove;
-
         connectedList = obj;
 
         connectedList.Change += OnChange;
@@ -104,6 +99,8 @@ public class UIList<T> : MonoBehaviour, IDropReceiver<T>
 
     private UIListElement<T> InstantiateAndConnectNewElement(T connectedElement, System.Action<UIListElement<T>> clickedOn)
     {
+        Debug.Log("Am I even existing? " + this);
+
         GameObject instance = Instantiate(elementPrefab, transform);
         UIListElement<T> element = instance.GetComponent<UIListElement<T>>();
         if (element == null)
@@ -117,6 +114,10 @@ public class UIList<T> : MonoBehaviour, IDropReceiver<T>
 
     private void HideAll()
     {
+        //unsubscribe from any previous list
+        connectedList.Change -= OnChange;
+        connectedList.ChangeAdd -= OnChangeAdd;
+        connectedList.ChangeRemove -= OnChangeRemove;
 
         if (elementRepresentations == null)
             return;

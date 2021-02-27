@@ -1,3 +1,4 @@
+using NaughtyAttributes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,15 +6,20 @@ using UnityEngine;
 
 public class UIHandler : Singleton<UIHandler>
 {
-    [SerializeField] UIDragableElement currentDragElement;
-    [SerializeField] Transform currentDragParent;
-    [SerializeField] Vector3 currentDragPosition;
+    [SerializeField] public Canvas UICanvas, InWorldCanvas;
+
+    [SerializeField] UIProcessorBase uIProcessorDotPrefab;
+    [SerializeField] UIProcessorBase uIProcessorPrefab;
+
+    [ShowNonSerializedField] private UIDragableElement currentDragElement;
+    [ShowNonSerializedField] private Transform currentDragParent;
+    [ShowNonSerializedField] private Vector3 currentDragPosition;
     internal void StartDrag(UIDragableElement uIDragableElement)
     {
         currentDragParent = uIDragableElement.transform.parent;
         currentDragPosition = uIDragableElement.transform.position;
         Vector3 scale = uIDragableElement.transform.localScale;
-        uIDragableElement.transform.SetParent(transform, worldPositionStays: false);
+        uIDragableElement.transform.SetParent(UICanvas.transform, worldPositionStays: false);
         uIDragableElement.transform.localScale = scale;
     }
 
@@ -23,5 +29,22 @@ public class UIHandler : Singleton<UIHandler>
 
         uIDragableElement.transform.SetParent(currentDragParent, worldPositionStays: false);
         uIDragableElement.transform.position = currentDragPosition;
+    }
+
+    public void CreateUI<T>(Processor processor)
+    {
+        if (typeof(T) == typeof(UIProcessorDot))
+            CreateUIInstance(processor, uIProcessorDotPrefab);
+        else if (typeof(T) == typeof(UIProcessor))
+            CreateUIInstance(processor, uIProcessorPrefab);
+    }
+
+    private void CreateUIInstance(Processor processor, UIProcessorBase prefab)
+    {
+        Debug.LogWarning("Instatiate: " + prefab.name);
+        Debug.LogWarning("Connect: " + processor.name);
+
+        UIProcessorBase instance = Instantiate(prefab, processor.transform.position, Quaternion.identity, InWorldCanvas.transform);
+        instance.Init(processor);
     }
 }

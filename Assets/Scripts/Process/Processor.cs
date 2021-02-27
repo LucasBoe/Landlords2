@@ -8,7 +8,13 @@ public class Processor : MonoBehaviour
 {
     [Expandable]
     [SerializeField] List<ProcessData> possibleProcesses = new List<ProcessData>();
-    [SerializeField] public SubscribableList<Process> ActiveProcesses = new SubscribableList<Process>(); 
+    [SerializeField] public SubscribableList<Process> ActiveProcesses = new SubscribableList<Process>();
+
+    private void Start()
+    {
+        ActivateAll();
+        Game.UIHandler.CreateUI<UIProcessorDot>(this);
+    }
 
     public ProcessData[] GetProcessDatas()
     {

@@ -18,11 +18,7 @@ public class UIProgressBar : MonoBehaviour
     float endTime;
     public void Init(IUIProgress progress)
     {
-        if (connected != null)
-        {
-            connected.OnStartProgressEvent -= StartProgress;
-            connected.OnFinishProgressEvent -= EndProgress;
-        }
+        Disconnect();
 
         connected = progress;
         connected.OnStartProgressEvent += StartProgress;
@@ -32,6 +28,15 @@ public class UIProgressBar : MonoBehaviour
             StartProgress();
         else
             EndProgress();
+    }
+
+    public void Disconnect()
+    {
+        if (connected != null)
+        {
+            connected.OnStartProgressEvent -= StartProgress;
+            connected.OnFinishProgressEvent -= EndProgress;
+        }
     }
 
     private void OnDisable()
@@ -60,9 +65,14 @@ public class UIProgressBar : MonoBehaviour
 
     private void SetVisualsActive(bool active)
     {
-        backgroundImage.enabled = active;
-        progressImage.enabled = active;
-        text.enabled = active;
+        if (backgroundImage != null)
+            backgroundImage.enabled = active;
+
+        if (progressImage != null)
+            progressImage.enabled = active;
+
+        if (text != null)
+            text.enabled = active;
     }
 
     private void Update()
@@ -76,8 +86,12 @@ public class UIProgressBar : MonoBehaviour
 
     public void UpdateBar(float progress)
     {
-        progressImage.fillAmount = progress;
-        text.text = Mathf.RoundToInt(progress * 100f).ToString() + "%";
-        text.alignment = progress > 0.5f ? TextAlignmentOptions.MidlineLeft : TextAlignmentOptions.MidlineRight;
+        if (progressImage != null)
+            progressImage.fillAmount = progress;
+        if (text != null)
+        {
+            text.text = Mathf.RoundToInt(progress * 100f).ToString() + "%";
+            text.alignment = progress > 0.5f ? TextAlignmentOptions.MidlineLeft : TextAlignmentOptions.MidlineRight;
+        }
     }
 }
