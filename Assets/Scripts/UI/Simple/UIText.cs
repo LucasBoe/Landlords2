@@ -23,9 +23,6 @@ public class UIText : MonoBehaviour, IUIConnectable
 
     public void HideUI()
     {
-        Debug.Log("Hide!");
-
-
         if (this == null)
             return;
 

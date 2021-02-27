@@ -6,17 +6,22 @@ using UnityEngine;
 [System.Serializable]
 public class UseableEntity : IUISprite, IUIString
 {
-    string type;
-    int amount;
+    [SerializeField] string type;
+    [SerializeField] int amount;
     [SerializeField] private UseableEntityData data;
 
     public UseableEntity(UseableEntityData data)
     {
         this.data = data;
+        type = data.type;
     }
 
     public UseableEntityData GetData() {
-        return Game.UseableEntityDataHandler.GetData(type);
+
+        if (data == null)
+            data = Game.UseableEntityDataHandler.GetData(type);
+
+        return data;
     }
 
     public Color GetUIImageColor()

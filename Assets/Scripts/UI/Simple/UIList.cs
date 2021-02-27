@@ -13,7 +13,6 @@ public interface IDropReceiver<T>
 
 public class UIList<T> : MonoBehaviour, IDropReceiver<T>
 {
-    public bool HandleAsArray;
     public GameObject elementPrefab;
     [SerializeField] SubscribableList<T> connectedList = new SubscribableList<T>();
     protected List<UIListElement<T>> elementRepresentations = new List<UIListElement<T>>();
@@ -25,14 +24,9 @@ public class UIList<T> : MonoBehaviour, IDropReceiver<T>
     /// </summary>
     public virtual void HideUI()
     {
-        connectedList.Change += OnChange;
-        connectedList.ChangeAt += OnChangeAt;
-
-        connectedList.ChangeAdd += OnChangeAdd;
-        connectedList.ChangeAddAt += OnChangeAddAt;
-
-        connectedList.ChangeRemove += OnChangeRemove;
-        connectedList.ChangeRemoveAt += OnChangeRemoveAt;
+        connectedList.Change -= OnChange;
+        connectedList.ChangeAdd -= OnChangeAdd;
+        connectedList.ChangeRemove -= OnChangeRemove;
 
         Destroy(gameObject);
     }
@@ -46,33 +40,19 @@ public class UIList<T> : MonoBehaviour, IDropReceiver<T>
         //hide visualized elements that were there before
         HideAll();
 
+        //unsubscribe from any previous list
+        connectedList.Change -= OnChange;
+        connectedList.ChangeAdd -= OnChangeAdd;
+        connectedList.ChangeRemove -= OnChangeRemove;
+
         connectedList = obj;
-        HandleAsArray = (connectedList.MaxCount != -1);
 
         connectedList.Change += OnChange;
-        connectedList.ChangeAt += OnChangeAt;
-
         connectedList.ChangeAdd += OnChangeAdd;
-        connectedList.ChangeAddAt += OnChangeAddAt;
-
         connectedList.ChangeRemove += OnChangeRemove;
-        connectedList.ChangeRemoveAt += OnChangeRemoveAt;
 
-        if (HandleAsArray)
-        {
-            Debug.Log("Init Array UI List");
-
-            for (int i = 0; i < connectedList.MaxCount; i++)
-            {
-                T source = (T)((connectedList != null && connectedList.Count > i) ? connectedList[i] : null);
-                elementRepresentations.Add(InstantiateAndConnectNewElement(source, ClickedOn));
-            }
-        }
-        else
-        {
-            foreach (T item in connectedList)
-                OnChangeAdd(item);
-        }
+        foreach (T item in connectedList)
+            OnChangeAdd(item);
 
     }
 
@@ -83,68 +63,31 @@ public class UIList<T> : MonoBehaviour, IDropReceiver<T>
 
     protected virtual void OnChange(T element)
     {
-        if (!HandleAsArray)
+        foreach (UIListElement<T> item in elementRepresentations)
         {
-            foreach (UIListElement<T> item in elementRepresentations)
-            {
-                if (item.Source.GetHashCode() == element.GetHashCode())
-                    item.UpdateUI();
-            }
+            if (item.Source.GetHashCode() == element.GetHashCode())
+                item.UpdateUI();
         }
-    }
-
-    protected virtual void OnChangeAt(int index)
-    {
-        if (HandleAsArray)
-            elementRepresentations[index].UpdateUI();
     }
 
     protected virtual void OnChangeAdd(T element)
     {
         Debug.LogWarning("ChangeAdd " + element);
 
-        if (!HandleAsArray)
-            elementRepresentations.Add(InstantiateAndConnectNewElement(element, ClickedOn));
-    }
-
-    protected virtual void OnChangeAddAt(int index)
-    {
-        if (HandleAsArray)
-        {
-            elementRepresentations[index].HideUI();
-            UIListElement<T> element = InstantiateAndConnectNewElement((T)connectedList[index], ClickedOn);
-            elementRepresentations[index] = element;
-            element.transform.SetSiblingIndex(index);
-        }
+        elementRepresentations.Add(InstantiateAndConnectNewElement(element, ClickedOn));
     }
 
     protected virtual void OnChangeRemove(T element)
     {
-        if (!HandleAsArray)
+        foreach (UIListElement<T> item in elementRepresentations)
         {
-            foreach (UIListElement<T> item in elementRepresentations)
-            {
-                if (item.Source.GetHashCode() == element.GetHashCode())
-                    item.HideUI();
+            if (item.Source.GetHashCode() == element.GetHashCode())
+                item.HideUI();
 
-                //Debug.Log(item.Source.GetHashCode() + " compare with: " + element.GetHashCode() + " : " + (item.Source.GetHashCode() == element.GetHashCode()));
-            }
+            //Debug.Log(item.Source.GetHashCode() + " compare with: " + element.GetHashCode() + " : " + (item.Source.GetHashCode() == element.GetHashCode()));
         }
     }
 
-    protected virtual void OnChangeRemoveAt(int index)
-    {
-        Debug.LogWarning(index);
-
-        if (HandleAsArray)
-        {
-            if (elementRepresentations[index] != null)
-                elementRepresentations[index].HideUI();
-            UIListElement<T> element = InstantiateAndConnectNewElement(default(T), ClickedOn);
-            elementRepresentations[index] = element;
-            element.transform.SetSiblingIndex(index);
-        }
-    }
 
     private void ClickedOn(UIListElement<T> representation)
     {

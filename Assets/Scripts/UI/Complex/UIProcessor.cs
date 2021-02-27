@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using NaughtyAttributes;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIProcessor : UIBehaviour
 {
@@ -12,8 +13,12 @@ public class UIProcessor : UIBehaviour
     [SerializeField] UIProcessList uIHeaderProcesses;
     [SerializeField] UIUseableEntityList inputListUI;
     [SerializeField] UIUseableEntityList nonHumanListUI;
+    [SerializeField] UIProgressBar progressBarUI;
 
-    [SerializeField] UseableEntityData useableEntityDataTEMP;
+    [SerializeField] Button startButton;
+    [SerializeField] Toggle loopToggle;
+
+    Process foregroundProcess;
 
     private void Start()
     {
@@ -28,24 +33,56 @@ public class UIProcessor : UIBehaviour
 
         p.ActivateAll(); //this should be done in the processor itself at some point
         uIHeaderProcesses.Init(p.ActiveProcesses); //all ui elements need to get connected through init
-        uIHeaderProcesses.DefineOnClick(ClickedOn);
+        uIHeaderProcesses.DefineOnClick(ClickOnHeaderItem);
         ChangeSelectedProcess(0); //this connects the ui with the first availiable process
-
-        //TEMP
-        p.GetProcess(1).nonHumanEntities.Add(new UseableEntity(useableEntityDataTEMP));
     }
 
-    private void ClickedOn(int index) {
+    private void ClickOnHeaderItem(int index)
+    {
         ChangeSelectedProcess(index);
     }
 
-    public void ChangeSelectedProcess(int foregroundIndex) {
+    public void ChangeSelectedProcess(int processIndex)
+    {
+        if (foregroundProcess != null)
+        {
+            foregroundProcess.inputEntities.ChangeAny -= UpdateUI;
+            foregroundProcess.nonHumanEntities.ChangeAny -= UpdateUI;
+            foregroundProcess.OnFinishProgressEvent -= UpdateUI;
+        }
 
-        Process process = GetConnected<Processor>().GetProcess(foregroundIndex);
 
-        inputListUI.Init(process.inputEntities);
-        nonHumanListUI.Init(process.nonHumanEntities);
+        foregroundProcess = GetConnected<Processor>().GetProcess(processIndex);
 
-        uIHeaderProcesses.HighlightElement = foregroundIndex;
+        SubscribableList<UseableEntity> input = foregroundProcess.inputEntities;
+        SubscribableList<UseableEntity> output = foregroundProcess.nonHumanEntities;
+
+        inputListUI.Init(input);
+        nonHumanListUI.Init(output);
+
+        input.ChangeAny += UpdateUI;
+        output.ChangeAny += UpdateUI;
+        foregroundProcess.OnFinishProgressEvent += UpdateUI;
+
+        progressBarUI.Init(foregroundProcess);
+
+        startButton.onClick.RemoveAllListeners();
+        startButton.onClick.AddListener(TryStartCurrentProcess);
+
+        loopToggle.onValueChanged.RemoveAllListeners();
+        loopToggle.onValueChanged.AddListener(foregroundProcess.SetLoop);
+
+        uIHeaderProcesses.HighlightElement = processIndex;
+        UpdateUI();
+    }
+    private void UpdateUI()
+    {
+        startButton.interactable = foregroundProcess.CanGetStarted();
+        loopToggle.isOn = foregroundProcess.Loop;
+    }
+
+    private void TryStartCurrentProcess()
+    {
+        foregroundProcess.TryStart(GetConnected<Processor>());
     }
 }

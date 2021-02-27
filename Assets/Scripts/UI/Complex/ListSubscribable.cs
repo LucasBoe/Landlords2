@@ -6,13 +6,12 @@ using System.Collections.Generic;
 [System.Serializable]
 public class SubscribableList<T>: IList
 {
-    public event Action<int> ChangeRemoveAt;
-    public event Action<int> ChangeAddAt;
-    public event Action<int> ChangeAt;
     public event Action<T> ChangeRemove;
     public event Action<T> Change;
     public event Action<T> ChangeAdd;
+    public event Action ChangeAny;
 
+    private bool isLocked;
     public int MaxCount = -1;
 
     //implementation of the IList interface using T
@@ -20,6 +19,8 @@ public class SubscribableList<T>: IList
 
     public bool IsFixedSize => false;
     public bool IsReadOnly => false;
+
+    public bool IsLocked { get => isLocked; }
 
     public int Count => list.Count;
 
@@ -29,12 +30,23 @@ public class SubscribableList<T>: IList
 
     public object this[int index] { get => list[index]; set { list[index] = (T)value; } }
 
+    public void Add(object[] array)
+    {
+        foreach (var value in array)
+        {
+            list.Add((T)value);
+
+            ChangeAdd?.Invoke((T)value);
+        }
+        ChangeAny?.Invoke();
+    }
+
     public int Add(object value)
     {
         list.Add((T)value);
 
         ChangeAdd?.Invoke((T)value);
-        ChangeAddAt?.Invoke(list.IndexOf((T)value));
+        ChangeAny?.Invoke();
 
         return list.IndexOf((T)value);
     }
@@ -57,9 +69,8 @@ public class SubscribableList<T>: IList
     public void Insert(int index, object value)
     {
         list.Insert(index, (T)value);
-
         ChangeAdd?.Invoke((T)value);
-        ChangeAddAt?.Invoke(index);
+        ChangeAny?.Invoke();
     }
 
     public void Remove(object value)
@@ -67,8 +78,7 @@ public class SubscribableList<T>: IList
         int index = list.IndexOf((T)value);
         list.Remove((T)value);
         ChangeRemove?.Invoke((T)value);
-        if (index >= 0)
-            ChangeRemoveAt?.Invoke(index);
+        ChangeAny?.Invoke();
     }
 
     public void RemoveAt(int index)
@@ -76,18 +86,17 @@ public class SubscribableList<T>: IList
         T obj = list[index];
         list.RemoveAt(index);
         ChangeRemove?.Invoke(obj);
-        if (index >= 0)
-            ChangeRemoveAt?.Invoke(index);
+        ChangeAny?.Invoke();
     }
 
     public void Changed(int index) {
         Change?.Invoke(list[index]);
-        ChangeAt?.Invoke(index);
+        ChangeAny?.Invoke();
     }
 
     public void Changed(object value) {
         Change?.Invoke((T)value);
-        ChangeAt?.Invoke(list.IndexOf((T)value));
+        ChangeAny?.Invoke();
     }
 
     public void CopyTo(Array array, int index)
@@ -100,8 +109,16 @@ public class SubscribableList<T>: IList
         return list.GetEnumerator();
     }
 
+    public void SetLocked(bool locked)
+    {
+        isLocked = locked;
+    }
+
     public virtual bool WouldReceive(T element)
     {
+        if (IsLocked)
+            return false;
+
         if (MaxCount < 0 || Count < MaxCount)
             return true;
 

@@ -4,20 +4,36 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public interface IUIProgress
+{
+    event Action OnStartProgressEvent;
+    event Action OnFinishProgressEvent;
+
+    float GetStartTime();
+    float GetDuration();
+
+    bool IsInProgress { get; }
+}
+
+
 [System.Serializable]
-public class Process : IUIString
+public class Process : IUIString, IUIProgress
 {
     [Expandable]
     [SerializeField]
     public ProcessData Data;
-    public ProcessStatus status = ProcessStatus.Running;
+    public ProcessStatus status = ProcessStatus.NotRunning;
+    public bool IsInProgress => status == ProcessStatus.Running;
+    float startTime = float.MinValue;
+    float duration = float.MaxValue;
     public bool Loop;
 
     public SubscribableList<UseableEntity> inputEntities = new SubscribableList<UseableEntity>();
     public SubscribableList<UseableEntity> nonHumanEntities = new SubscribableList<UseableEntity>();
 
-    System.Action OnStartProcessing;
-    System.Action OnFinishProcessing;
+
+    public event Action OnStartProgressEvent;
+    public event Action OnFinishProgressEvent;
 
     public Process (ProcessData data)
     {
@@ -27,7 +43,13 @@ public class Process : IUIString
 
     public virtual bool CanGetStarted ()
     {
-        return status == ProcessStatus.Running && CheckInputConditions();
+        return status != ProcessStatus.Running && CheckInputConditions();
+    }
+
+    public void TryStart(Processor processor)
+    {
+        if (CanGetStarted())
+            processor.StartCoroutine(ProcessRoutine());
     }
 
     private bool CheckInputConditions()
@@ -46,7 +68,9 @@ public class Process : IUIString
         foreach (ProcessInputData inputItem in Data.input)
         {
             if (!inputAmountPairs.ContainsKey(inputItem.entity) || inputAmountPairs[inputItem.entity] < inputItem.amountMin)
+            {
                 return false;
+            }
         }
 
         return true;
@@ -54,10 +78,33 @@ public class Process : IUIString
 
     public virtual IEnumerator ProcessRoutine ()
     {
+        bool first = true;
         status = ProcessStatus.Running;
-        OnStartProcessing?.Invoke();
-        yield return new WaitForSeconds(CalculateDuration());
-        OnFinishProcessing?.Invoke();
+        inputEntities.SetLocked(true);
+
+        while (first || Loop)
+        {
+            first = false;
+            startTime = Time.time;
+            duration = CalculateDuration();
+            OnStartProgressEvent?.Invoke();
+            yield return new WaitForSeconds(duration);
+            nonHumanEntities.Add(Result());
+            OnFinishProgressEvent?.Invoke();
+        }
+
+        status = ProcessStatus.NotRunning;
+        inputEntities.SetLocked(false);
+    }
+
+    private void StartProcess()
+    {
+
+    }
+
+    internal void SetLoop(bool shouldLoop)
+    {
+        Loop = shouldLoop;
     }
 
     public virtual UseableEntity[] Result()
@@ -86,6 +133,16 @@ public class Process : IUIString
     public string GetUIString()
     {
         return Data.name;
+    }
+
+    public float GetStartTime()
+    {
+        return startTime;
+    }
+
+    public float GetDuration()
+    {
+        return duration;
     }
 
     public enum ProcessStatus

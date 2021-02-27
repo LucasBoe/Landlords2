@@ -45,13 +45,15 @@ public class UIListElement<T> : UIDragableElement
 
     protected override bool IsDragabled()
     {
-        return Source != null;
+        return Source != null && !List.IsLocked;
     }
 
     public override void OnEndDrag(PointerEventData eventData)
     {
         if (!isInDrag)
             return;
+
+        Debug.LogWarning("END DRAG ON " + gameObject.name);
 
         base.OnEndDrag(eventData);
         if (TryDrop(eventData.pointerCurrentRaycast.gameObject))
