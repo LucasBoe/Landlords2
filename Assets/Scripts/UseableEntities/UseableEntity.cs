@@ -1,7 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UIElements;
 
 [System.Serializable]
 public class UseableEntity : IUISprite, IUIString
@@ -9,6 +10,8 @@ public class UseableEntity : IUISprite, IUIString
     [SerializeField] string type;
     [SerializeField] int amount;
     [SerializeField] private UseableEntityData data;
+
+    
 
     public UseableEntity(UseableEntityData data)
     {
@@ -44,5 +47,32 @@ public class UseableEntity : IUISprite, IUIString
             return data.DisplayName;
 
         return "";
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public static UseableEntity[] CreateArrayFromDataArray(List<UseableEntityData> spawnOnStart)
+    {
+        List<UseableEntity> useableEntities = new List<UseableEntity>();
+
+        foreach (UseableEntityData data in spawnOnStart)
+        {
+            useableEntities.Add(new UseableEntity(data));
+        }
+
+        return useableEntities.ToArray();
     }
 }

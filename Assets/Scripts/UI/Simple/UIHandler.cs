@@ -11,8 +11,13 @@ public class UIHandler : Singleton<UIHandler>
     [SerializeField] UIProcessorBase uIProcessorDotPrefab;
     [SerializeField] UIProcessorBase uIProcessorPrefab;
 
+    [SerializeField] UIUseableEntityList uIdockPrefab; 
+
     [ShowNonSerializedField] private UIDragableElement currentDragElement;
     [ShowNonSerializedField] private Transform currentDragParent;
+
+
+
     [ShowNonSerializedField] private Vector3 currentDragPosition;
     internal void StartDrag(UIDragableElement uIDragableElement)
     {
@@ -38,6 +43,15 @@ public class UIHandler : Singleton<UIHandler>
         else if (typeof(T) == typeof(UIProcessor))
             CreateUIInstance(processor, uIProcessorPrefab);
     }
+
+
+    public void CreateUI(Dock dock)
+    {
+        UIUseableEntityList instance = Instantiate(uIdockPrefab, UICanvas.transform);
+        instance.Init(dock.GetUseableEntityList());
+    }
+
+
 
     private void CreateUIInstance(Processor processor, UIProcessorBase prefab)
     {

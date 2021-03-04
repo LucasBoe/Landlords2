@@ -10,15 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0d577a893cce14cde9be57eaf31aac81, type: 3}
-  m_Name: FastFarming
+  m_Name: Foresting
   m_EditorClassIdentifier: 
   input:
-  - entity: {fileID: 11400000, guid: f0d4003e03ac94006a4f528b9a0c2fd0, type: 2}
+  - entity: {fileID: 11400000, guid: 5ef25239ae54b408c84ddc7ff2850746, type: 2}
     amountMin: 1
-    amountMax: 3
+    amountMax: 1
     allwaysOutput: 1
-  output:
   - entity: {fileID: 11400000, guid: 0f1f7967e196b4718847d06a81c12cd5, type: 2}
-    baseAmount: 0
-    amountPerInput: 2
+    amountMin: 1
+    amountMax: 1
+    allwaysOutput: 0
+  output:
+  - entity: {fileID: 11400000, guid: d3c92b9301c0daa479b69cda94328f24, type: 2}
+    baseAmount: 1
+    amountPerInput: 0
     probability: 1
+    outputToDock: 1
+  Duration: 1

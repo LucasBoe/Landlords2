@@ -32,7 +32,15 @@ public class Singleton<T> : MonoBehaviour where T : Singleton<T>
                 if (usePrefab)
                 {
                     string name = (prefabName == "") ? typeof(T).ToString() : prefabName;
-                    instance = LoadResourceFromName(name);
+                    try
+                    {
+                        instance = LoadResourceFromName(name);
+                    }
+                    catch (System.Exception)
+                    {
+
+                        throw new System.Exception("no prefab named " + name + " found in Singletons/");
+                    }
                 }
                 else
                 {

@@ -15,10 +15,12 @@ MonoBehaviour:
   input:
   - entity: {fileID: 11400000, guid: f0d4003e03ac94006a4f528b9a0c2fd0, type: 2}
     amountMin: 1
-    amountMax: 3
+    amountMax: 1
     allwaysOutput: 1
   output:
   - entity: {fileID: 11400000, guid: 0f1f7967e196b4718847d06a81c12cd5, type: 2}
-    baseAmount: 0
-    amountPerInput: 1
+    baseAmount: 1
+    amountPerInput: 0
     probability: 1
+    outputToDock: 1
+  Duration: 1

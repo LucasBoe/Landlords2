@@ -1,23 +1,33 @@
 using NaughtyAttributes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Dock : MonoBehaviour
+public class Dock : Singleton<Dock>
 {
-    [SerializeField] UIUseableEntityList dockListUI;
     [SerializeField] SubscribableList<UseableEntity> dockList = new SubscribableList<UseableEntity>();
-    [SerializeField] UseableEntityData useableEntityTestDataTEMP;
 
-    private void Start()
+
+    protected override void Start()
     {
-        dockListUI.Init(dockList);
-        dockList.Add(new UseableEntity(useableEntityTestDataTEMP));
+        base.Start();
+
+        Game.UIHandler.CreateUI(this);
     }
 
-    [Button]
-    private void TestTEMP()
+    public SubscribableList<UseableEntity> GetUseableEntityList()
     {
-        dockList.Add(new UseableEntity(useableEntityTestDataTEMP));
+        return dockList;
+    }
+
+    internal void Add(UseableEntity[] useableEntities)
+    {
+        dockList.Add(useableEntities);
+    }
+
+    public float GetFilledFloat()
+    {
+        return (float)dockList.Count / 20f;
     }
 }

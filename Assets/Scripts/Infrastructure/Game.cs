@@ -20,14 +20,30 @@ public class Game : MonoBehaviour
 
     public static CameraHandler Camera {
         get {
-            return CameraHandler.GetInstance();
+            return CameraHandler.GetInstance(usePrefab: true);
         }
     }
     public static UIHandler UIHandler
     {
         get
         {
-            return UIHandler.GetInstance();
+            return UIHandler.GetInstance(usePrefab: true);
+        }
+    }
+
+    public static ResultSpawnHandler ResultSpawnHandler
+    {
+        get
+        {
+            return ResultSpawnHandler.GetInstance(usePrefab: true);
+        }
+    }
+
+    public static Dock Dock
+    {
+        get
+        {
+            return Dock.GetInstance(usePrefab: true);
         }
     }
 

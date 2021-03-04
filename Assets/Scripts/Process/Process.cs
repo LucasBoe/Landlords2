@@ -31,6 +31,7 @@ public class Process : IUIString, IUIProgress
     public SubscribableList<UseableEntity> inputEntities = new SubscribableList<UseableEntity>();
     public SubscribableList<UseableEntity> nonHumanEntities = new SubscribableList<UseableEntity>();
 
+    Processor processor;
 
     public event Action OnStartProgressEvent;
     public event Action OnFinishProgressEvent;
@@ -48,6 +49,8 @@ public class Process : IUIString, IUIProgress
 
     public void TryStart(Processor processor)
     {
+        this.processor = processor;
+
         if (CanGetStarted())
             processor.StartCoroutine(ProcessRoutine());
     }
@@ -89,12 +92,23 @@ public class Process : IUIString, IUIProgress
             duration = CalculateDuration();
             OnStartProgressEvent?.Invoke();
             yield return new WaitForSeconds(duration);
-            nonHumanEntities.Add(Result());
+            ClearConsumeablesFromInput();
+            nonHumanEntities.Add(SpawnResultsAndReturnLocalOnes());
             OnFinishProgressEvent?.Invoke();
         }
 
         status = ProcessStatus.NotRunning;
         inputEntities.SetLocked(false);
+    }
+
+    private void ClearConsumeablesFromInput()
+    {
+        UseableEntity[] toRemove = Data.GetToRemove(inputEntities);
+
+        foreach (UseableEntity remove in toRemove)
+        {
+            inputEntities.Remove(remove);
+        }
     }
 
     private void StartProcess()
@@ -107,9 +121,10 @@ public class Process : IUIString, IUIProgress
         Loop = shouldLoop;
     }
 
-    public virtual UseableEntity[] Result()
+    public virtual UseableEntity[] SpawnResultsAndReturnLocalOnes()
     {
-        List<UseableEntity> results = new List<UseableEntity>();
+        List<UseableEntity> local = new List<UseableEntity>();
+        List<UseableEntity> dock = new List<UseableEntity>();
 
         foreach (var item in Data.output)
         {
@@ -117,17 +132,23 @@ public class Process : IUIString, IUIProgress
             {
                 for (int i = 0; i < (item.baseAmount + item.amountPerInput * inputEntities.Count); i++)
                 {
-                    results.Add(new UseableEntity(item.entity));
+                    UseableEntity newUseableEntity = new UseableEntity(item.entity);
+
+                    if (item.outputToDock)
+                        dock.Add(newUseableEntity);
+                    else
+                        local.Add(newUseableEntity);
                 }
             }
         }
 
-        return results.ToArray();
+        Game.ResultSpawnHandler.Spawn(dock.ToArray(), processor.transform);
+        return local.ToArray();
     }
 
     public virtual float CalculateDuration()
     {
-        return 10f;
+        return Data.Duration;
     }
 
     public string GetUIString()

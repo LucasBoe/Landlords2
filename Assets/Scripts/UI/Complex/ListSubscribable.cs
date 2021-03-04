@@ -17,12 +17,26 @@ public class SubscribableList<T>: IList
     //implementation of the IList interface using T
     [SerializeField] List<T> list = new List<T>();
 
+    public SubscribableList(T[] elements)
+    {
+        list.AddRange(elements);
+    }
+
+    public SubscribableList()
+    {
+    }
+
     public bool IsFixedSize => false;
     public bool IsReadOnly => false;
 
     public bool IsLocked { get => isLocked; }
 
     public int Count => list.Count;
+
+    internal T[] ToArray()
+    {
+        return list.ToArray();
+    }
 
     public bool IsSynchronized => false;
 
