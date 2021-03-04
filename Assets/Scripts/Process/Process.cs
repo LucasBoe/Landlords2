@@ -82,22 +82,21 @@ public class Process : IUIString, IUIProgress
     public virtual IEnumerator ProcessRoutine ()
     {
         bool first = true;
-        status = ProcessStatus.Running;
         inputEntities.SetLocked(true);
 
-        while (first || Loop)
+        while ((first || Loop) && CanGetStarted())
         {
+            status = ProcessStatus.Running;
             first = false;
             startTime = Time.time;
             duration = CalculateDuration();
             OnStartProgressEvent?.Invoke();
             yield return new WaitForSeconds(duration);
             ClearConsumeablesFromInput();
+            status = ProcessStatus.NotRunning;
             nonHumanEntities.Add(SpawnResultsAndReturnLocalOnes());
             OnFinishProgressEvent?.Invoke();
         }
-
-        status = ProcessStatus.NotRunning;
         inputEntities.SetLocked(false);
     }
 
